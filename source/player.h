@@ -3,7 +3,7 @@
 #include <sstream>
 #include <vector>
 
-//#include "tankBullet.h"
+#include "bullet.h"
 
 using namespace std;
 
@@ -16,12 +16,14 @@ using namespace std;
 	#include <SDL2_ttf/SDL_ttf.h>
 #endif
 
+
 #if defined(_WIN32) || (_WIN64)
 	#include "SDL.h"
 	#include "SDL_image.h"
 	#include "SDL_mixer.h"
 	#include "SDL_ttf.h"
 #endif
+
 
 #if defined(__linux__)
 	#include "SDL2/SDL.h"
@@ -38,7 +40,7 @@ public:
 
 	bool active;
 
-	//vector<TankBullet> bulletList;
+	vector<Bullet> bulletList;
 
 	string playerPath;
 

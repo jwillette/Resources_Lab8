@@ -10,6 +10,7 @@ using namespace std;
 
 
 
+// 1. new cross platform project
 #if defined(_WIN32) || (_WIN64)
 
 	#include "SDL.h"
@@ -59,6 +60,9 @@ using namespace std;
 
 
 
+	#include "player.h"
+	#include "meteor.h"
+
 	const int SCREEN_WIDTH = 1024;
 	const int SCREEN_HEIGHT = 768;
 
@@ -85,7 +89,7 @@ using namespace std;
 		convert << playerScore;
 		Result = convert.str();
 
-		tempText = "SCORE: " + Result;
+		tempText = "score: " + Result;
 
 		scoreSurface = TTF_RenderText_Solid(font, tempText.c_str(), color);
 		scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
@@ -95,10 +99,27 @@ using namespace std;
 
 
 
+	void PlayerLives(SDL_Renderer *renderer)
+	{
+		string Result;
+		ostringstream convert;
+		convert << playerLives;
+		Result = convert.str();
+
+		tempText = " lives: " + Result;
+
+		livesSurface = TTF_RenderText_Solid(font, tempText.c_str(), color);
+		livesTexture = SDL_CreateTextureFromSurface(renderer, livesSurface);
+		SDL_QueryTexture(livesTexture, NULL, NULL, &livesPos.w, &livesPos.h);
+		SDL_FreeSurface(livesSurface);
+	}
+
 
 
 	int main()
 	{
+		srand(time(NULL));
+
 		SDL_Init(SDL_INIT_EVERYTHING);
 
 		SDL_Window *window = nullptr;
@@ -126,35 +147,42 @@ using namespace std;
 		gGameController0 = SDL_GameControllerOpen(0);
 
 
-		// audio
-		Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-		Mix_Music *bgm = Mix_LoadMUS((audio_dir + "Blazing-Stars.mp3").c_str());
-		if(!Mix_PlayingMusic())
-			Mix_PlayMusic(bgm, -1);
-
-
 		// bg
+		// 2. a background image 1024 x 768
 		SDL_Texture *bkgd = IMG_LoadTexture(renderer, (images_dir + "bg.png").c_str());
 		SDL_Rect bkgdRect;
 		bkgdRect.x = 0;
 		bkgdRect.y = 0;
 		bkgdRect.w = 1024;
 		bkgdRect.h = 768;
-		float X_pos = 0.0f, Y_pos = 0.0f;
+
+
+		// audio
+		// 3. background music that loops
+		Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+		Mix_Music *bgm = Mix_LoadMUS((audio_dir + "Blazing-Stars.mp3").c_str());
+		if(!Mix_PlayingMusic())
+			Mix_PlayMusic(bgm, -1);
 
 
 		// font
 		TTF_Init();
-		font = TTF_OpenFont((images_dir + "One Starry Night.TTF").c_str(), 40);
+		font = TTF_OpenFont((images_dir + "One Starry Night.TTF").c_str(), 80);
 
 		scorePos.x = 10;
-		scorePos.y = 10;
+		scorePos.y = 0;
 
 		livesPos.x = 10;
-		livesPos.y = 40;
+		livesPos.y = 60;
 
 		PlayerText(renderer);
-		//TurretText(renderer, 0);
+		PlayerLives(renderer);
+
+		// player
+		Player player = Player(renderer, images_dir.c_str(), audio_dir.c_str(), (SCREEN_WIDTH/2)-32, (SCREEN_HEIGHT/2)-32);
+
+		// meteor
+		Meteor meteor = Meteor(renderer, images_dir.c_str());
 
 
 
@@ -171,13 +199,45 @@ using namespace std;
 				{
 					quit = true;
 				}
+
+				switch(e.type)
+				{
+				case SDL_CONTROLLERBUTTONDOWN:
+
+					if(e.cdevice.which == 0)
+					{
+						if(e.cbutton.button == SDL_CONTROLLER_BUTTON_A)
+						{
+							// 5. player fires a bullet in the direction it's traveling
+							player.OnControllerButton(e.cbutton);
+							break;
+						}
+					} break;
+				}
 			}
 
-			SDL_RenderClear(renderer);
-			SDL_RenderCopy(renderer, bkgd, NULL, &bkgdRect);
 
-			SDL_RenderCopy(renderer, scoreTexture, NULL, &scorePos);
-			//			SDL_RenderCopy(renderer, turretTexture, NULL, &turretPos);
+			// 4. player character that moves on full rotation
+			const Sint16 xValue = SDL_GameControllerGetAxis(gGameController0, SDL_CONTROLLER_AXIS_LEFTX);
+			const Sint16 yValue = SDL_GameControllerGetAxis(gGameController0, SDL_CONTROLLER_AXIS_LEFTY);
+
+			player.OnControllerAxis(xValue, yValue);
+
+
+			player.Update(deltaTime);
+			meteor.Update(deltaTime);
+
+			SDL_RenderClear(renderer);
+
+				SDL_RenderCopy(renderer, bkgd, NULL, &bkgdRect);
+
+				player.Draw(renderer);
+				meteor.Draw(renderer);
+
+				// 28. custom fonts to draw the score
+				// 29. custom fonts to draw the lives
+				SDL_RenderCopy(renderer, scoreTexture, NULL, &scorePos);
+				SDL_RenderCopy(renderer, livesTexture, NULL, &livesPos);
 
 			SDL_RenderPresent(renderer);
 		}

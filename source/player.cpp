@@ -10,7 +10,7 @@ Player::Player(SDL_Renderer *renderer, string filePath, string audioPath, float 
 
 	fire = Mix_LoadWAV((audioPath + "laser.wav").c_str());
 
-	//playerPath = filePath + "tank.png";
+	playerPath = filePath + "player.png";
 
 	texture = IMG_LoadTexture(renderer, playerPath.c_str());
 
@@ -34,15 +34,15 @@ Player::Player(SDL_Renderer *renderer, string filePath, string audioPath, float 
 	center.x = posRect.w/2;
 	center.y = posRect.h/2;
 
-	//	string bulletPath;
-	//
-	//	bulletPath = filePath + "bulletPink.png";
+	string bulletPath;
 
-	//	for(int i = 0; i < 10; i++)
-	//	{
-	//		TankBullet tmpBullet(renderer, bulletPath, -1000, -1000, 0, 0);
-	//		bulletList.push_back(tmpBullet);
-	//	}
+	bulletPath = filePath + "bullet.png";
+
+	for(int i = 0; i < 10; i++)
+	{
+		Bullet tmpBullet(renderer, bulletPath, -1000, -1000, 0, 0);
+		bulletList.push_back(tmpBullet);
+	}
 }
 
 
@@ -96,26 +96,26 @@ void Player::Update(float deltaTime)
 	}
 
 
-	//	for(int i = 0; i < bulletList.size(); i++)
-	//	{
-	//		if(bulletList[i].active)
-	//		{
-	//			bulletList[i].Update(deltaTime);
-	//		}
-	//	}
+	for(int i = 0; i < bulletList.size(); i++)
+	{
+		if(bulletList[i].active)
+		{
+			bulletList[i].Update(deltaTime);
+		}
+	}
 }
 
 
 
 void Player::Draw(SDL_Renderer *renderer)
 {
-	//	for(int i = 0; i < bulletList.size(); i++)
-	//	{
-	//		if(bulletList[i].active)
-	//		{
-	//			bulletList[i].Draw(renderer);
-	//		}
-	//	}
+	for(int i = 0; i < bulletList.size(); i++)
+	{
+		if(bulletList[i].active)
+		{
+			bulletList[i].Draw(renderer);
+		}
+	}
 
 	SDL_RenderCopyEx(renderer, texture, nullptr, &posRect, angle, &center, SDL_FLIP_NONE);
 }
@@ -154,31 +154,31 @@ void Player::OnControllerAxis(Sint16 X, Sint16 Y)
 
 void Player::CreateBullet()
 {
-	//	for(int i = 0; i < bulletList.size(); i++)
-	//	{
-	//		if(bulletList[i].active == false)
-	//		{
-	//			Mix_PlayChannel(-1, fire, 0);
-	//
-	//			bulletList[i].active = true;
-	//
-	//			bulletList[i].posRect.x = (posRect.x + (posRect.w/2));
-	//			bulletList[i].posRect.y = (posRect.y + (posRect.h/2));
-	//
-	//			bulletList[i].posRect.x = bulletList[i].posRect.x - (bulletList[i].posRect.w/2);
-	//			bulletList[i].posRect.y = bulletList[i].posRect.y - (bulletList[i].posRect.h/2);
-	//
-	//			bulletList[i].pos_X = bulletList[i].posRect.x;
-	//			bulletList[i].pos_Y = bulletList[i].posRect.y;
-	//
-	//			if(xValue != 0 || yValue != 0)
-	//			{
-	//				bulletList[i].tankAngle = tankAngle;
-	//			} else {
-	//				bulletList[i].tankAngle = oldAngle;
-	//			}
-	//
-	//			break;
-	//		}
-	//	}
+	for(int i = 0; i < bulletList.size(); i++)
+	{
+		if(bulletList[i].active == false)
+		{
+			Mix_PlayChannel(-1, fire, 0);
+
+			bulletList[i].active = true;
+
+			bulletList[i].posRect.x = (posRect.x + (posRect.w/2));
+			bulletList[i].posRect.y = (posRect.y + (posRect.h/2));
+
+			bulletList[i].posRect.x = bulletList[i].posRect.x - (bulletList[i].posRect.w/2);
+			bulletList[i].posRect.y = bulletList[i].posRect.y - (bulletList[i].posRect.h/2);
+
+			bulletList[i].pos_X = bulletList[i].posRect.x;
+			bulletList[i].pos_Y = bulletList[i].posRect.y;
+
+			if(xValue != 0 || yValue != 0)
+			{
+				bulletList[i].tankAngle = angle;
+			} else {
+				bulletList[i].tankAngle = oldAngle;
+			}
+
+			break;
+		}
+	}
 }
