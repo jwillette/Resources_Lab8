@@ -2,6 +2,9 @@
 
 Meteor::Meteor(SDL_Renderer *renderer, string filePath)
 {
+	active = true;
+
+	// 6. one large rock enemy that rotates
 	string enemyPath = filePath + "meteor2.png";
 
 	SDL_Surface *surface = IMG_Load(enemyPath.c_str());
@@ -15,29 +18,12 @@ Meteor::Meteor(SDL_Renderer *renderer, string filePath)
 	posRect.w = w;
 	posRect.h = h;
 
+
+	// 7. rock travels in one of four randomly chosen directions
+	direction = rand() % 4;
+
 	Reset();
 
-	direction = rand() % 3;
-	if(direction == 1)
-	{
-		xDir = 0;
-		yDir = 1;
-	}
-	else if(direction == 2)
-	{
-		xDir = 1;
-		yDir = 0;
-	}
-	else if(direction == 3)
-	{
-		xDir = 0;
-		yDir = -1;
-	}
-	else
-	{
-		xDir = -1;
-		yDir = 0;
-	}
 
 	angle = rand() % (360);
 
@@ -48,14 +34,39 @@ Meteor::Meteor(SDL_Renderer *renderer, string filePath)
 
 void Meteor::Reset()
 {
-	//speed = rand() % (5) + 1;
+	if(!active)
+	{
+		direction = rand() % 4;
+	}
+
 	speed = 3;
 	speed *= 100;
 
-//	posRect.x = rand() % (1024-posRect.w) + 1;
-	posRect.x = 100;
-//	posRect.y = 0 - posRect.h;
-	posRect.y = 100;
+	if(direction == 1)
+	{
+		posRect.x = -200;
+		posRect.y = -200;
+	}
+
+	else if(direction == 2)
+	{
+		posRect.x = -200;
+		posRect.y = 768;
+	}
+
+	else if(direction == 3)
+	{
+		posRect.x = 1024;
+		posRect.y = -200;
+	}
+
+	else
+	{
+		posRect.x = 1024;
+		posRect.y = 768;
+	}
+
+
 
 	pos_X = posRect.x;
 	pos_Y = posRect.y;
@@ -64,46 +75,59 @@ void Meteor::Reset()
 
 void Meteor::Update(float deltaTime)
 {
+	if(active)
+	{
+		// down, right
+		if(direction == 1)
+		{
+			xDir = 1;
+			yDir = 1;
+		}
+		// up, right
+		else if(direction == 2)
+		{
+			xDir = 1;
+			yDir = -1;
+		}
+		// down, left
+		else if(direction == 3)
+		{
+			xDir = -1;
+			yDir = 1;
+		}
+		// up, left
+		else
+		{
+			xDir = -1;
+			yDir = -1;
+		}
 
-	if(direction == 1)
-	{
-		xDir = 0;
-		yDir = 1;
+
+		pos_X += (speed * xDir) * deltaTime;
+		pos_Y += (speed * yDir) * deltaTime;
+
+		posRect.x = (int)(pos_X + 0.5f);
+		posRect.y = (int)(pos_Y + 0.5f);
+
+		// 8. Large rock wraps around the edges of the screen
+		if(posRect.x > 1024 + 101 || posRect.x < 0 - 201)
+		{
+			Reset();
+		}
+
+		if(posRect.y > 768 + 101 || posRect.y < 0 - 201)
+		{
+			Reset();
+		}
+
+		angle += .1;
 	}
-	else if(direction == 2)
-	{
-		xDir = 1;
-		yDir = 0;
-	}
-	else if(direction == 3)
-	{
-		xDir = 0;
-		yDir = -1;
-	}
+
 	else
 	{
-		xDir = -1;
-		yDir = 0;
+		posRect.x = -2000;
+		posRect.y = -2000;
 	}
-
-
-	pos_X += (speed * xDir) * deltaTime;
-	pos_Y += (speed * yDir) * deltaTime;
-
-	posRect.x = (int)(pos_X + 0.5f);
-	posRect.y = (int)(pos_Y + 0.5f);
-
-	if(posRect.x > 1024 || posRect.x < 0)
-	{
-		Reset();
-	}
-
-	if(posRect.y > 768 || posRect.y < 0)
-	{
-		Reset();
-	}
-
-	angle += .1;
 }
 
 

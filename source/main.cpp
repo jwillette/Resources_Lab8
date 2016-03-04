@@ -164,6 +164,8 @@ using namespace std;
 		if(!Mix_PlayingMusic())
 			Mix_PlayMusic(bgm, -1);
 
+		Mix_Chunk *explosionSound = Mix_LoadWAV((audio_dir + "explosion.aif").c_str());
+
 
 		// font
 		TTF_Init();
@@ -226,6 +228,46 @@ using namespace std;
 
 			player.Update(deltaTime);
 			meteor.Update(deltaTime);
+
+
+
+			// 9. Large rock can be shot, gives 50 points
+			for (int i = 0; i < player.bulletList.size(); i++)
+			{
+				if (player.bulletList[i].active == true)
+				{
+					if (SDL_HasIntersection(&player.bulletList[i].posRect, &meteor.posRect))
+					{
+						Mix_PlayChannel(-1, explosionSound, 0);
+						//MakeExplosion(enemyList[j].posRect.x, enemyList[j].posRect.y);
+						meteor.Reset();
+						meteor.active = false;
+						player.bulletList[i].Reset();
+						playerScore += 50;
+						PlayerText(renderer);
+					}
+
+				}
+			}
+
+
+
+			// 10. Large rock plays an explosion sound when shot.
+			if (SDL_HasIntersection(&player.posRect, &meteor.posRect))
+			{
+				Mix_PlayChannel(-1, explosionSound, 0);
+				//MakeExplosion(player1.posRect.x - 32, player1.posRect.y - 32);
+
+				meteor.active = false;
+				meteor.Reset();
+
+				playerLives--;
+				PlayerLives(renderer);
+			}
+
+			meteor.active = true;
+
+
 
 			SDL_RenderClear(renderer);
 
